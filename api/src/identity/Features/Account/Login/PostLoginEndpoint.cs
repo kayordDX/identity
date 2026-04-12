@@ -25,8 +25,9 @@ public class PostLoginEndpoint(SignInManager<User> signInManager) : EndpointWith
 
     if (!result.Succeeded)
     {
-      await Send.ResultAsync(
-        Results.Content(LoginPageHelper.LoginPageHtml(returnUrl, "Invalid username or password."), "text/html"));
+      var redirectPath = $"/login?returnUrl={Uri.EscapeDataString(returnUrl)}" +
+                         $"&error={Uri.EscapeDataString("Invalid username or password.")}";
+      await Send.ResultAsync(Results.Redirect(redirectPath));
       return;
     }
 

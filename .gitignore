@@ -13,3 +13,6 @@ api/src/online/bin*
 
 # Playwright screenshots
 **/__screenshots/
+
+identity.db*
+wwwroot/

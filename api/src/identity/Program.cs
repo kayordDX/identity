@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore;
 using Identity.Data;
 using Identity.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -44,6 +42,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
   options.LoginPath = "/account/login";
 });
+
+// ── Google OAuth ─────────────────────────────────────────────────────────────
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+  builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+      options.ClientId = googleClientId;
+      options.ClientSecret = googleClientSecret;
+    });
+}
 
 // ── OpenIddict ──────────────────────────────────────────────────────────────
 builder.Services.AddOpenIddict()
@@ -97,13 +109,23 @@ builder.Services.AddAuthorization(options =>
       .RequireAuthenticatedUser());
 });
 
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+    policy.AllowAnyHeader()
+          .AllowAnyMethod()
+          .WithOrigins("http://localhost:5173")));
+
 var app = builder.Build();
 
+app.UseCors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseApi();
+
+// Serve index.html for any route the static file middleware doesn't match
+// (i.e. OIDC redirect-back URLs like /?code=… are handed to the Svelte SPA)
+app.MapFallbackToFile("index.html");
 
 // ── Seed database ───────────────────────────────────────────────────────────
 await SeedAsync(app.Services);
@@ -122,35 +144,48 @@ static async Task SeedAsync(IServiceProvider services)
   // ── Register the web test client ──
   var appManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
-  if (await appManager.FindByClientIdAsync("web_client") is null)
+  // Always sync the client descriptor so redirect URI changes take effect
+  // on the next restart without needing to wipe the database.
+  var descriptor = new OpenIddictApplicationDescriptor
   {
-    await appManager.CreateAsync(new OpenIddictApplicationDescriptor
+    ClientId = "web_client",
+    ClientType = ClientTypes.Public,
+    DisplayName = "Web Test Client",
+    RedirectUris =
     {
-      ClientId = "web_client",
-      ClientType = ClientTypes.Public,
-      DisplayName = "Web Test Client",
-      RedirectUris =
-      {
-        new Uri("https://localhost:7199/"),
-        new Uri("http://localhost:5214/"),
-      },
-      PostLogoutRedirectUris =
-      {
-        new Uri("https://localhost:7199/"),
-        new Uri("http://localhost:5214/"),
-      },
-      Permissions =
-      {
-        Permissions.Endpoints.Authorization,
-        Permissions.Endpoints.Token,
-        Permissions.Endpoints.EndSession,
-        Permissions.GrantTypes.AuthorizationCode,
-        Permissions.GrantTypes.RefreshToken,
-        Permissions.ResponseTypes.Code,
-        Permissions.Scopes.Profile,
-        Permissions.Scopes.Email,
-      },
-    });
+      new Uri("https://localhost:7199/"),
+      new Uri("http://localhost:5214/"),
+      new Uri("http://localhost:5173/"),          // Svelte dev server
+      new Uri("http://localhost:5173/test/callback"),
+    },
+    PostLogoutRedirectUris =
+    {
+      new Uri("https://localhost:7199/"),
+      new Uri("http://localhost:5214/"),
+      new Uri("http://localhost:5173/"),          // Svelte dev server
+    },
+    Permissions =
+    {
+      Permissions.Endpoints.Authorization,
+      Permissions.Endpoints.Token,
+      Permissions.Endpoints.EndSession,
+      Permissions.GrantTypes.AuthorizationCode,
+      Permissions.GrantTypes.RefreshToken,
+      Permissions.ResponseTypes.Code,
+      Permissions.Scopes.Profile,
+      Permissions.Scopes.Email,
+    },
+  };
+
+  var existingClient = await appManager.FindByClientIdAsync("web_client");
+  if (existingClient is null)
+  {
+    await appManager.CreateAsync(descriptor);
+  }
+  else
+  {
+    await appManager.PopulateAsync(existingClient, descriptor);
+    await appManager.UpdateAsync(existingClient);
   }
 
   // ── Seed a default admin user ──
