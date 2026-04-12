@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+.svelte-kit/
+obj/
+bin/
+Logs/
+.idea/
+.vs
+api/src/online/bin*
+
+# Playwright screenshots
+**/__screenshots/
