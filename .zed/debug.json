@@ -1,0 +1,21 @@
+[
+  {
+    "label": "Debug .NET Core App",
+    "adapter": "netcoredbg",
+    "request": "launch",
+    "program": "${ZED_WORKTREE_ROOT}/api/src/identity/bin/Debug/net10.0/identity.dll",
+    "cwd": "${ZED_WORKTREE_ROOT}/api/src/identity",
+    "env": {
+      "ASPNETCORE_ENVIRONMENT": "Development",
+      "ASPNETCORE_URLS": "http://localhost:5214",
+    },
+    "build": {
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${ZED_WORKTREE_ROOT}/api/src/identity/identity.csproj",
+        "-p:Configuration=Debug",
+      ],
+    },
+  },
+]

@@ -50,14 +50,7 @@
 			<input type="hidden" name="returnUrl" value={returnUrl} />
 
 			<label for="username">Username</label>
-			<input
-				id="username"
-				type="text"
-				name="username"
-				required
-				autofocus
-				autocomplete="username"
-			/>
+			<input id="username" type="text" name="username" required autofocus autocomplete="username" />
 
 			<label for="password">Password</label>
 			<input
@@ -73,7 +66,7 @@
 
 		{#if googleEnabled}
 			<div class="divider"><span>or</span></div>
-			<a href={googleHref} class="btn-google">
+			<a href={googleHref} class="btn-google" data-sveltekit-reload>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 48 48"

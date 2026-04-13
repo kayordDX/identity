@@ -27,6 +27,6 @@ public class ExternalLoginEndpoint(SignInManager<User> signInManager) : Endpoint
     var redirectUrl = $"/account/login/external-callback?returnUrl={Uri.EscapeDataString(returnUrl)}";
     var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
 
-    await HttpContext.ChallengeAsync(provider, properties);
+    await Send.ResultAsync(Results.Challenge(properties, new[] { provider }));
   }
 }
