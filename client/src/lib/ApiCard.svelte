@@ -1,13 +1,14 @@
 <script lang="ts">
+	import { PUBLIC_IDENTITY_URL } from '$env/static/public';
 	type Props = {
 		user: any;
 	};
 
 	let { user }: Props = $props();
 
-	let apiOutput = '';
-	let apiError = '';
-	let isLoading = false;
+	let apiOutput = $state('');
+	let apiError = $state('');
+	let isLoading = $state(false);
 
 	async function callApi() {
 		isLoading = true;
@@ -21,7 +22,7 @@
 		}
 
 		try {
-			const res = await fetch('/api/me', {
+			const res = await fetch(`${PUBLIC_IDENTITY_URL}/api/me`, {
 				headers: { Authorization: `Bearer ${user.access_token}` }
 			});
 
@@ -57,7 +58,7 @@
 		<div class="alert alert-error">{apiError}</div>
 	{/if}
 	<div class="btn-row" style="margin-top: 1rem">
-		<button class="btn btn-success" disabled={isLoading} on:click={callApi}>
+		<button class="btn btn-success" disabled={isLoading} onclick={callApi}>
 			{isLoading ? 'Loading...' : 'Call /api/me'}
 		</button>
 	</div>

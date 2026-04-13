@@ -29,3 +29,12 @@ Help with entire flow to test this. I want to generate a token somehow. How can 
 ```bash
 dotnet ef migrations add InitTables --project api/src/identity/identity.csproj -c AppDbContext -o ./Data/Migrations
 ```
+
+## Secrets
+
+```bash 
+dotnet user-secrets init --project api/src/identity
+dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project api/src/identity
+dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project api/src/identity
+dotnet user-secrets list --project api/src/identity
+```

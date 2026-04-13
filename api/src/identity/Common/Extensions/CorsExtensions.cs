@@ -19,4 +19,10 @@ public static class CorsExtensions
       });
     });
   }
+
+  public static IApplicationBuilder UseCorsIdentity(this IApplicationBuilder app)
+  {
+    app.UseCors(_allowedOrigins);
+    return app;
+  }
 }

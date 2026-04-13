@@ -26,7 +26,7 @@ public static class DataExtensions
       }
     });
 
-    services.AddIdentity<User, IdentityRole<Guid>>(options =>
+    services.AddIdentity<User, Role>(options =>
       {
         // Relax password rules for development
         options.Password.RequireDigit = false;
@@ -34,6 +34,7 @@ public static class DataExtensions
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredLength = 6;
+        options.User.RequireUniqueEmail = true;
       })
       .AddEntityFrameworkStores<AppDbContext>()
       .AddDefaultTokenProviders();

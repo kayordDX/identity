@@ -15,7 +15,7 @@ var app = builder.Build();
 
 await app.Services.ApplyMigrations(app.Lifetime.ApplicationStopping);
 
-app.UseCors();
+app.UseCorsIdentity();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthentication();

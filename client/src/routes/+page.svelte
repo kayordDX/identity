@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { UserManager } from 'oidc-client-ts';
-	import { PUBLIC_OIDC_AUTHORITY } from '$env/static/public';
+	import { PUBLIC_OIDC_AUTHORITY, PUBLIC_IDENTITY_URL } from '$env/static/public';
 	import AuthCard from '../lib/AuthCard.svelte';
 	import ApiCard from '../lib/ApiCard.svelte';
 	import RegisterCard from '../lib/RegisterCard.svelte';
@@ -21,8 +21,8 @@
 			const mgr = new UserManager({
 				authority,
 				client_id: 'web_client',
-				redirect_uri: window.location.origin + '/',
-				post_logout_redirect_uri: window.location.origin + '/',
+				redirect_uri: PUBLIC_IDENTITY_URL + '/',
+				post_logout_redirect_uri: PUBLIC_IDENTITY_URL + '/',
 				scope: 'openid profile email offline_access',
 				response_type: 'code'
 			});

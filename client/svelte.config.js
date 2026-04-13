@@ -1,12 +1,13 @@
 import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	compilerOptions: {
-		// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
-	},
+	preprocess: vitePreprocess(),
 	kit: {
+		alias: {
+			$lib: './src/lib'
+		},
 		adapter: adapter({
 			// Output the static build directly into the backend's wwwroot so
 			// ASP.NET Core can serve the Svelte SPA as static files.
@@ -17,6 +18,11 @@ const config = {
 			// router can take over and handle the ?code= / ?error= parameters.
 			fallback: 'index.html'
 		})
+	},
+	vitePlugin: {
+		inspector: {
+			showToggleButton: 'never'
+		}
 	}
 };
 
