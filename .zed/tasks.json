@@ -1,0 +1,8 @@
+[
+  {
+    "label": "Run",
+    "command": "dotnet run --project ./api/src/identity/identity.csproj",
+    "tags": ["test"],
+    "hide": "on_success",
+  },
+]

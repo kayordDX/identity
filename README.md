@@ -23,3 +23,9 @@ They should all use the same identity service for authentication and authorizati
 
 This project can use sqlite for now until I later switch to postgres.
 Help with entire flow to test this. I want to generate a token somehow. How can I create simple html page with openid-ts client to test auth. I want to also test creating a new user.
+
+## EF
+
+```bash
+dotnet ef migrations add InitTables --project api/src/identity/identity.csproj -c AppDbContext -o ./Data/Migrations
+```
