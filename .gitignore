@@ -16,3 +16,5 @@ api/src/online/bin*
 
 identity.db*
 wwwroot/
+
+identity.pfx

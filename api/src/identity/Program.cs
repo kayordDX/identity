@@ -7,7 +7,7 @@ builder.Services.ConfigureQuartz();
 builder.Services.ConfigureEF(builder.Configuration, builder.Environment);
 
 builder.Services.ConfigureGoogleAuth(builder.Configuration);
-builder.Services.ConfigureOpenIddict();
+builder.Services.ConfigureOpenIddict(builder.Configuration);
 builder.Services.ConfigureAuth();
 builder.Services.ConfigureCors(builder.Configuration);
 

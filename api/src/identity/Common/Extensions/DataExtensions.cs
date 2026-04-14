@@ -69,6 +69,7 @@ public static class DataExtensions
         new Uri("https://localhost:7199/"),
         new Uri("http://localhost:5214/"),
         new Uri("http://localhost:5173/"),          // Svelte dev server
+        new Uri("http://localhost:5173/test"),          // Svelte dev server
       },
       Permissions =
       {

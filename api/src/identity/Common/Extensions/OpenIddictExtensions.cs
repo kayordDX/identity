@@ -1,4 +1,9 @@
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using Identity.Common.Config;
 using Identity.Data;
+using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -17,8 +22,11 @@ public static class OpenIddictExtensions
     return services;
   }
 
-  public static IServiceCollection ConfigureOpenIddict(this IServiceCollection services)
+  public static IServiceCollection ConfigureOpenIddict(this IServiceCollection services, IConfiguration configuration)
   {
+    var appConfig = configuration.GetSection("App").Get<AppConfig>()
+        ?? throw new InvalidOperationException("App configuration is missing.");
+
     services.AddOpenIddict()
       .AddCore(options =>
       {
@@ -43,9 +51,14 @@ public static class OpenIddictExtensions
           Scopes.Email,
           Scopes.OfflineAccess);
 
-        options
-          .AddDevelopmentEncryptionCertificate()
-          .AddDevelopmentSigningCertificate();
+        // options
+        //   .AddDevelopmentEncryptionCertificate()
+        //   .AddDevelopmentSigningCertificate();
+
+
+        options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(appConfig.EncryptionKey)));
+        var pfx = X509CertificateLoader.LoadPkcs12FromFile(appConfig.SigningCertPath, appConfig.SigningCertPassword);
+        options.AddSigningCertificate(pfx);
 
         options.UseAspNetCore()
           .DisableTransportSecurityRequirement() // Allow HTTP in development
