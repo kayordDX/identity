@@ -55,6 +55,7 @@ public static class DataExtensions
     var descriptor = new OpenIddictApplicationDescriptor
     {
       ClientId = "web_client",
+      // ClientSecret = "web_client_secret",
       ClientType = ClientTypes.Public,
       DisplayName = "Web Test Client",
       RedirectUris =
@@ -62,7 +63,8 @@ public static class DataExtensions
         new Uri("https://localhost:7199/"),
         new Uri("http://localhost:5214/"),
         new Uri("http://localhost:5173/"),          // Svelte dev server
-        new Uri("http://localhost:5173/test/callback"),
+        new Uri("http://localhost:5000/auth/login/callback"),
+        new Uri("http://localhost:5000/signin-oidc"),
       },
       PostLogoutRedirectUris =
       {
