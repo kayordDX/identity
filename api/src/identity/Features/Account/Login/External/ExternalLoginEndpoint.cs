@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Identity.Entities;
 
-namespace Identity.Features.Account.Login;
+namespace Identity.Features.Account.Login.External;
 
 public class ExternalLoginEndpoint(SignInManager<User> signInManager) : EndpointWithoutRequest
 {

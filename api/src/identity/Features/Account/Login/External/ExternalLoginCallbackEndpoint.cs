@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Identity.Entities;
 
-namespace Identity.Features.Account.Login;
+namespace Identity.Features.Account.Login.External;
 
 public class ExternalLoginCallbackEndpoint(
   SignInManager<User> signInManager,

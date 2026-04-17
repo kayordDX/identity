@@ -7,7 +7,7 @@
 	import { onMount } from "svelte";
 
 	interface GoogleClientIdResponse {
-		clientId: string | null;
+		googleClientId: string | null;
 	}
 
 	const returnUrl = $derived(page.url.searchParams.get("returnUrl") ?? "/");
@@ -23,10 +23,10 @@
 	const getClientId = async () => {
 		try {
 			isLoadingGoogle = true;
-			const res = await fetch(`${PUBLIC_OIDC_AUTHORITY}/api/config/google-client-id`);
+			const res = await fetch(`${PUBLIC_OIDC_AUTHORITY}/config/auth/external`);
 			if (res.ok) {
 				const data = (await res.json()) as GoogleClientIdResponse;
-				googleEnabled = !!data.clientId;
+				googleEnabled = !!data.googleClientId;
 			}
 		} catch {
 			googleError = "Unable to load Google login. Please try again later.";

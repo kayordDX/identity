@@ -8,7 +8,6 @@ public class GetMeEndpoint : EndpointWithoutRequest<MeResponse>
   public override void Configure()
   {
     Get("/api/me");
-    Policies("ApiPolicy");
     Description(x => x.WithName("GetMe"));
   }
 
