@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using OpenIddict.Validation.AspNetCore;
 
 namespace Identity.Common.Extensions;
@@ -6,20 +8,20 @@ public static class AuthExtensions
 {
   public static IServiceCollection ConfigureAuth(this IServiceCollection services)
   {
-    services.AddAuthorization(options =>
-    {
-      // Used for bearer-token-protected API endpoints
-      options.AddPolicy("ApiPolicy", policy =>
-        policy
-          .AddAuthenticationSchemes(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)
-          .RequireAuthenticatedUser());
-    });
-
+    services.AddAuthorization(ConfigureAuthorization);
     services.ConfigureApplicationCookie(options =>
     {
       options.LoginPath = "/account/login";
     });
     return services;
+  }
+
+  static void ConfigureAuthorization(AuthorizationOptions options)
+  {
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
   }
 
   public static IServiceCollection ConfigureGoogleAuth(this IServiceCollection services, IConfiguration configuration)

@@ -3,50 +3,87 @@
 	import { PUBLIC_OIDC_AUTHORITY } from "$env/static/public";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import { GoogleIcon } from "$lib/svg/icons";
-	import { Button, Card, Field, Input, Separator } from "@kayord/ui";
+	import { Alert, Button, Card, Field, Input, Spinner } from "@kayord/ui";
 	import { onMount } from "svelte";
 
-	const base = PUBLIC_OIDC_AUTHORITY;
+	interface GoogleClientIdResponse {
+		clientId: string | null;
+	}
 
 	const returnUrl = $derived(page.url.searchParams.get("returnUrl") ?? "/");
-	const error = $derived(page.url.searchParams.get("error"));
+	// const error = $derived(page.url.searchParams.get("error"));
 	const googleHref = $derived(
-		`${base}/account/login/external?provider=Google&returnUrl=${encodeURIComponent(returnUrl)}`
+		`${PUBLIC_OIDC_AUTHORITY}/account/login/external?provider=Google&returnUrl=${encodeURIComponent(returnUrl)}`
 	);
 
+	let isLoadingGoogle = $state(false);
 	let googleEnabled = $state(false);
+	let googleError = $state("");
 
-	onMount(async () => {
+	const getClientId = async () => {
 		try {
-			const res = await fetch(`${base}/api/config/google-client-id`);
+			isLoadingGoogle = true;
+			const res = await fetch(`${PUBLIC_OIDC_AUTHORITY}/api/config/google-client-id`);
 			if (res.ok) {
-				const data = await res.json();
+				const data = (await res.json()) as GoogleClientIdResponse;
 				googleEnabled = !!data.clientId;
 			}
 		} catch {
+			googleError = "Unable to load Google login. Please try again later.";
 			// Google not configured or server unavailable — button stays hidden
+		} finally {
+			isLoadingGoogle = false;
 		}
+	};
+
+	onMount(async () => {
+		getClientId();
 	});
 </script>
 
-<div class="flex h-screen w-full flex-col items-center">
-	<div class="flex h-full max-w-2xl flex-col items-center justify-center gap-6 p-2">
-		<LogoButton />
+<div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+	<div class="flex w-full max-w-sm flex-col gap-6">
+		<div class="flex justify-center">
+			<LogoButton />
+		</div>
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="text-center">Welcome back</Card.Title>
-				<Card.Description class="text-center">Sign in</Card.Description>
+				<Card.Description class="text-center">Login with your Google account</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">
+				{#if googleError}
+					<Alert.Root variant="destructive">
+						<Alert.Title>Google error</Alert.Title>
+						<Alert.Description>{googleError}</Alert.Description>
+					</Alert.Root>
+				{/if}
+				{#if googleEnabled && !googleError}
+					<div class="flex w-full flex-col gap-2">
+						<Button href={googleHref} disabled={isLoadingGoogle}>
+							{#if isLoadingGoogle}
+								<Spinner />
+							{:else}
+								<GoogleIcon class="fill-primary-foreground" />
+							{/if}
+							Login with Google
+						</Button>
+					</div>
+				{/if}
+
+				<Field.Separator class="my-6 w-full *:data-[slot=field-separator-content]:bg-card">
+					Or continue with
+				</Field.Separator>
+
 				<form
 					method="post"
-					action={`${base}/account/login`}
-					class="my-2 flex w-full flex-col gap-2"
+					action={`${PUBLIC_OIDC_AUTHORITY}/account/login`}
+					class="my-2 flex w-full flex-col gap-4"
 				>
 					<input type="hidden" name="returnUrl" value={returnUrl} />
 					<Field.Field>
-						<Field.Label for="username">Username</Field.Label>
-						<Input id="username" type="text" name="username" required autocomplete="username" />
+						<Field.Label for="username">Email</Field.Label>
+						<Input id="username" type="email" name="username" required autocomplete="email" />
 					</Field.Field>
 					<Field.Field>
 						<Field.Label for="password">Password</Field.Label>
@@ -58,23 +95,9 @@
 							autocomplete="current-password"
 						/>
 					</Field.Field>
-					<Button type="submit">Sign In</Button>
+					<Button type="submit" class="mt-2">Sign In</Button>
 				</form>
-				{#if googleEnabled}
-					<div class="flex w-full flex-col gap-2">
-						<Separator />
-						<Button href={googleHref}>
-							<GoogleIcon class="fill-primary-foreground" />
-							Continue with Google
-						</Button>
-					</div>
-				{/if}
 			</Card.Content>
-			<Card.Footer class="flex flex-col items-center gap-2">
-				<p class="text-xs text-muted-foreground">
-					We use Google to keep your account secure. No password needed.
-				</p>
-			</Card.Footer>
 		</Card.Root>
 		<p class="text-xs text-muted-foreground">
 			By signing in, you agree to our Terms of Service and Privacy Policy
