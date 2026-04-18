@@ -7,7 +7,7 @@ public class PostRegisterEndpoint(UserManager<User> userManager) : Endpoint<Regi
 {
   public override void Configure()
   {
-    Post("/api/account/register");
+    Post("/account/register");
     AllowAnonymous();
     Description(x => x.WithName("PostRegister"));
   }

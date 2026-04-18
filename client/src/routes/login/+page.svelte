@@ -3,15 +3,16 @@
 	import { PUBLIC_OIDC_AUTHORITY } from "$env/static/public";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import { GoogleIcon } from "$lib/svg/icons";
-	import { Alert, Button, Card, Field, Input, Spinner } from "@kayord/ui";
+	import { Alert, Button, Card, Field, Spinner } from "@kayord/ui";
 	import { onMount } from "svelte";
+	import LoginForm from "./LoginForm.svelte";
 
 	interface GoogleClientIdResponse {
 		googleClientId: string | null;
 	}
 
 	const returnUrl = $derived(page.url.searchParams.get("returnUrl") ?? "/");
-	// const error = $derived(page.url.searchParams.get("error"));
+	const error = $derived(page.url.searchParams.get("error"));
 	const googleHref = $derived(
 		`${PUBLIC_OIDC_AUTHORITY}/account/login/external?provider=Google&returnUrl=${encodeURIComponent(returnUrl)}`
 	);
@@ -75,28 +76,13 @@
 					Or continue with
 				</Field.Separator>
 
-				<form
-					method="post"
-					action={`${PUBLIC_OIDC_AUTHORITY}/account/login`}
-					class="my-2 flex w-full flex-col gap-4"
-				>
-					<input type="hidden" name="returnUrl" value={returnUrl} />
-					<Field.Field>
-						<Field.Label for="username">Email</Field.Label>
-						<Input id="username" type="email" name="username" required autocomplete="email" />
-					</Field.Field>
-					<Field.Field>
-						<Field.Label for="password">Password</Field.Label>
-						<Input
-							id="password"
-							type="password"
-							name="password"
-							required
-							autocomplete="current-password"
-						/>
-					</Field.Field>
-					<Button type="submit" class="mt-2">Sign In</Button>
-				</form>
+				<LoginForm />
+
+				{#if error}
+					<Alert.Root variant="destructive" class="mt-4">
+						<Alert.Description>{error}</Alert.Description>
+					</Alert.Root>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 		<p class="text-xs text-muted-foreground">

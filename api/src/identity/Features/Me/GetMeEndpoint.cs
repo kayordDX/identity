@@ -7,7 +7,7 @@ public class GetMeEndpoint : EndpointWithoutRequest<MeResponse>
 {
   public override void Configure()
   {
-    Get("/api/me");
+    Get("/me");
     Description(x => x.WithName("GetMe"));
   }
 

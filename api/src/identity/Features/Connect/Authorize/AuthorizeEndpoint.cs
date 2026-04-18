@@ -44,9 +44,10 @@ public class GetAuthorizeEndpoint : EndpointWithoutRequest<bool>
 
     // Build an OpenIddict identity with the right claim destinations
     var identity = new ClaimsIdentity(
-      authenticationType: TokenValidationParameters.DefaultAuthenticationType,
-      nameType: OpenIddictConstants.Claims.Name,
-      roleType: OpenIddictConstants.Claims.Role);
+      TokenValidationParameters.DefaultAuthenticationType,
+      OpenIddictConstants.Claims.Name,
+      OpenIddictConstants.Claims.Role
+    );
 
     identity
       .SetClaim(OpenIddictConstants.Claims.Subject, userId)
