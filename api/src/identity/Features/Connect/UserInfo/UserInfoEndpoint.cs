@@ -11,7 +11,6 @@ public class UserInfoEndpoint : EndpointWithoutRequest<IDictionary<string, objec
   public override void Configure()
   {
     Get("connect/userinfo");
-    AllowAnonymous();
     Description(x => x.WithName("UserInfo"));
   }
 

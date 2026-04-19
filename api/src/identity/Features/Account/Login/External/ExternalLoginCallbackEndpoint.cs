@@ -24,48 +24,53 @@ public class ExternalLoginCallbackEndpoint(
     if (info is null)
     {
       await Send.ResultAsync(Results.Redirect(
-        loginUrl + "&error=" + Uri.EscapeDataString("Google sign-in failed. Please try again.")));
+        loginUrl + "&error=" + Uri.EscapeDataString("External sign-in failed. Please try again.")));
       return;
     }
 
-    // Happy path – user already has a linked external login
+    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrWhiteSpace(email))
+    {
+      await Send.ResultAsync(Results.Redirect(
+        loginUrl + "&error=" + Uri.EscapeDataString("No email address was returned by the provider.")));
+      return;
+    }
+
+    var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? email;
+    var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? email;
+    var picture = info.Principal.FindFirstValue("picture");
+
+    // Try sign-in with an existing linked external login
     var signInResult = await signInManager.ExternalLoginSignInAsync(
       info.LoginProvider, info.ProviderKey,
       isPersistent: false, bypassTwoFactor: true);
 
     if (signInResult.Succeeded)
     {
+      var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+      if (user is not null)
+        await SyncProfileAsync(user, firstName, lastName, picture);
+
       await Send.ResultAsync(Results.Redirect(returnUrl));
       return;
     }
 
-    // No linked login yet – resolve or create a local user
-    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-    if (string.IsNullOrWhiteSpace(email))
+    // No linked login yet – find or create the local user
+    var localUser = await userManager.FindByEmailAsync(email);
+
+    if (localUser is null)
     {
-      await Send.ResultAsync(Results.Redirect(
-        loginUrl + "&error=" + Uri.EscapeDataString("No email address was returned by Google.")));
-      return;
-    }
-
-    var user = await userManager.FindByEmailAsync(email);
-
-    if (user is null)
-    {
-      var displayName =
-        info.Principal.FindFirstValue(ClaimTypes.Name) ??
-        info.Principal.FindFirstValue(ClaimTypes.GivenName) ??
-        email;
-
-      user = new User
+      localUser = new User
       {
         UserName = email,
         Email = email,
-        EmailConfirmed = true,   // trusted – came from Google
-        DisplayName = displayName,
+        EmailConfirmed = true,
+        FirstName = firstName,
+        LastName = lastName,
+        Picture = picture
       };
 
-      var createResult = await userManager.CreateAsync(user);
+      var createResult = await userManager.CreateAsync(localUser);
       if (!createResult.Succeeded)
       {
         var errors = string.Join(" ", createResult.Errors.Select(e => e.Description));
@@ -74,9 +79,12 @@ public class ExternalLoginCallbackEndpoint(
         return;
       }
     }
+    else
+    {
+      await SyncProfileAsync(localUser, firstName, lastName, picture);
+    }
 
-    // Link the Google login to the (new or existing) user
-    var addLoginResult = await userManager.AddLoginAsync(user, info);
+    var addLoginResult = await userManager.AddLoginAsync(localUser, info);
     if (!addLoginResult.Succeeded)
     {
       var errors = string.Join(" ", addLoginResult.Errors.Select(e => e.Description));
@@ -85,7 +93,23 @@ public class ExternalLoginCallbackEndpoint(
       return;
     }
 
-    await signInManager.SignInAsync(user, isPersistent: false);
+    await signInManager.SignInAsync(localUser, isPersistent: false);
     await Send.ResultAsync(Results.Redirect(returnUrl));
+  }
+
+  private async Task SyncProfileAsync(User user, string firstName, string lastName, string? picture)
+  {
+    var changed =
+      user.FirstName != firstName ||
+      user.LastName != lastName ||
+      user.Picture != picture;
+
+    if (!changed) return;
+
+    user.FirstName = firstName;
+    user.LastName = lastName;
+    user.Picture = picture;
+
+    await userManager.UpdateAsync(user);
   }
 }

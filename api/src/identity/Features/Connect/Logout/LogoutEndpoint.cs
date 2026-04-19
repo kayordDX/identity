@@ -4,13 +4,13 @@ using OpenIddict.Server.AspNetCore;
 
 namespace Identity.Features.Connect.Logout;
 
-public class GetLogoutEndpoint : EndpointWithoutRequest<bool>
+public class LogoutEndpoint : EndpointWithoutRequest<bool>
 {
   public override void Configure()
   {
     Get("connect/logout");
     AllowAnonymous();
-    Description(x => x.WithName("GetLogout"));
+    Description(x => x.WithName("Logout"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

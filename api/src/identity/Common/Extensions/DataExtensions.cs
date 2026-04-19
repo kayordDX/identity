@@ -105,7 +105,8 @@ public static class DataExtensions
       {
         UserName = "admin",
         Email = "admin@example.com",
-        DisplayName = "Admin"
+        FirstName = "Admin",
+        LastName = "User"
       };
       await userManager.CreateAsync(admin, "password");
     }

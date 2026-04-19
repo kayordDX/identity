@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Validation.AspNetCore;
@@ -36,6 +37,13 @@ public static class AuthExtensions
         {
           options.ClientId = googleClientId;
           options.ClientSecret = googleClientSecret;
+          options.Events.OnCreatingTicket = ctx =>
+          {
+            var picture = ctx.User.GetProperty("picture").GetString();
+            if (!string.IsNullOrEmpty(picture))
+              ctx.Identity?.AddClaim(new Claim("picture", picture));
+            return Task.CompletedTask;
+          };
         });
     }
     return services;

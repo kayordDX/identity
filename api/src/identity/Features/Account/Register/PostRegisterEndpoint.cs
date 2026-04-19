@@ -14,7 +14,7 @@ public class PostRegisterEndpoint(UserManager<User> userManager) : Endpoint<Regi
 
   public override async Task HandleAsync(RegisterRequest req, CancellationToken ct)
   {
-    if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
+    if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password))
     {
       await Send.ResultAsync(Results.BadRequest(new { error = "Username and password are required." }));
       return;
@@ -22,9 +22,10 @@ public class PostRegisterEndpoint(UserManager<User> userManager) : Endpoint<Regi
 
     var user = new User
     {
-      UserName = req.Username,
       Email = req.Email,
-      DisplayName = req.Username
+      UserName = req.Email,
+      FirstName = req.FirstName,
+      LastName = req.LastName
     };
 
     var result = await userManager.CreateAsync(user, req.Password);

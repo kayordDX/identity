@@ -35,6 +35,9 @@ public static class OpenIddictExtensions
       })
       .AddServer(options =>
       {
+        options.SetAccessTokenLifetime(TimeSpan.FromMinutes(5))
+           .SetRefreshTokenLifetime(TimeSpan.FromDays(14));
+
         options
           .SetAuthorizationEndpointUris("connect/authorize")
           .SetTokenEndpointUris("connect/token")
@@ -43,6 +46,7 @@ public static class OpenIddictExtensions
 
         options
           .AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange()
+          .AllowPasswordFlow()
           .AllowRefreshTokenFlow();
 
         options.RegisterScopes(
@@ -50,11 +54,6 @@ public static class OpenIddictExtensions
           Scopes.Profile,
           Scopes.Email,
           Scopes.OfflineAccess);
-
-        // options
-        //   .AddDevelopmentEncryptionCertificate()
-        //   .AddDevelopmentSigningCertificate();
-
 
         options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(appConfig.EncryptionKey)));
         var pfx = X509CertificateLoader.LoadPkcs12FromFile(appConfig.SigningCertPath, appConfig.SigningCertPassword);
