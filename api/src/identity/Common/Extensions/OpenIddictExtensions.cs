@@ -1,6 +1,4 @@
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Identity.Common.Config;
 using Identity.Data;
 using Microsoft.IdentityModel.Tokens;
@@ -35,8 +33,9 @@ public static class OpenIddictExtensions
       })
       .AddServer(options =>
       {
-        options.SetAccessTokenLifetime(TimeSpan.FromMinutes(5))
-           .SetRefreshTokenLifetime(TimeSpan.FromDays(14));
+        options
+          .SetAccessTokenLifetime(TimeSpan.FromMinutes(appConfig.AccessTokenLifetime))
+          .SetRefreshTokenLifetime(TimeSpan.FromDays(appConfig.RefreshTokenLifetime));
 
         options
           .SetAuthorizationEndpointUris("connect/authorize")
